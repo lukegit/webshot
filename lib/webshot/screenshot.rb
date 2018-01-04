@@ -35,15 +35,6 @@ module Webshot
     # Captures a screenshot of +url+ saving it to +path+.
     def capture(url, path, opts = {})
       begin
-        # Default settings
-        width   = opts.fetch(:width, 120)
-        height  = opts.fetch(:height, 90)
-        gravity = opts.fetch(:gravity, "north")
-        quality = opts.fetch(:quality, 85)
-        full = opts.fetch(:full, true)
-        selector = opts.fetch(:selector, nil)
-        allowed_status_codes = opts.fetch(:allowed_status_codes, [])
-
         # Reset session before visiting url
         Capybara.reset_sessions! unless @session_started
         @session_started = false
@@ -54,6 +45,20 @@ module Webshot
         # Timeout
         sleep opts[:timeout] if opts[:timeout]
 
+        # Default settings
+        default_size = page.driver.evaluate_script <<-EOS
+          function() {
+            var rect = document.body.getBoundingClientRect();
+            return [rect.width, rect.height];
+          }();
+        EOS
+        width   = opts.fetch(:width, default_size[0])
+        height  = opts.fetch(:height, default_size[1])
+        gravity = opts.fetch(:gravity, "north")
+        quality = opts.fetch(:quality, 85)
+        full = opts.fetch(:full, true)
+        selector = opts.fetch(:selector, nil)
+        allowed_status_codes = opts.fetch(:allowed_status_codes, [])
         # Check response code
         status_code = page.driver.status_code.to_i
         unless valid_status_code?(status_code, allowed_status_codes)
