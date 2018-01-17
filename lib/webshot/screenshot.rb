@@ -59,6 +59,9 @@ module Webshot
         full = opts.fetch(:full, true)
         selector = opts.fetch(:selector, nil)
         allowed_status_codes = opts.fetch(:allowed_status_codes, [])
+
+        Capybara.page.driver.browser.resize(width, height)
+
         # Check response code
         status_code = page.driver.status_code.to_i
         unless valid_status_code?(status_code, allowed_status_codes)
